@@ -1,0 +1,8 @@
+.*\.env$
+.venv/
+.*\.pyc$
+.*\.egg-info/
+\.idea/
+venv/
+caret
+.*\.log
