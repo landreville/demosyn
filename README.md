@@ -1,8 +1,22 @@
 This repo contains a Pyramid application that uses asynchronous
 patterns to complete synchronous requests faster.
 
+Generally this means a synchronous view is fanning out to run multiple
+asynchronous functions concurrently and then fanning back in to return
+those results.
+
+In these cases it's also important to have a timeout, because the intention
+is to reduce the amount of time a use is waiting for a request to complete.
+And because these requests are run in worker threads which should be held
+for a minimum amount of time.
+
+If a request is long-running (Eg 10 seconds or more) or the result (or failure)
+is not displayed to the user then there are other patterns that are more
+appropriate such as task queues, awaitables that are scheduled without waiting
+for the result, or websockets.
+
 ## Ad-hoc Event Loop
-The view `async_scoped`  creates an event loop within the request. Multiple
+The view `async_scoped` creates an event loop within the request. Multiple
 coroutines are run concurrently on the event loop. At the end of the request
 the syncronous view waits for the results of all concurrently running
 awaitables to complete. The event loop is then closed and the results
@@ -23,6 +37,9 @@ threads could be increased to the number of CPU cores for most efficient
 performance. That's only necessary if the worker thread is consistently
 fully utilizing a CPU core.
 
-The `loopworker`
+The `loopworker` module provides a request property `loop` for the loop
+running in a separate thread. It also provides some helper methods for
+scheduling awaitables in synchronous views.
 
-The `async_worker_simple`
+The `async_worker_simple` uses the helper method `wait_results` which waits
+for the given awaitables to complete and returns only the successful results.
